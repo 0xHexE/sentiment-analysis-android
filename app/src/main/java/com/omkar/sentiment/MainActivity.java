@@ -7,7 +7,6 @@ import com.aylien.textapi.TextAPIClient;
 import com.aylien.textapi.TextAPIException;
 import com.aylien.textapi.parameters.SummarizeParams;
 import com.aylien.textapi.responses.Summarize;
-import com.omkar.sentiment.R;
 
 public class MainActivity extends AppCompatActivity {
   @Override
