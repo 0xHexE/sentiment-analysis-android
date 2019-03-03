@@ -2,12 +2,12 @@ package com.omkar.sentiment;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
 
 import com.aylien.textapi.TextAPIClient;
 import com.aylien.textapi.TextAPIException;
 import com.aylien.textapi.parameters.SentimentParams;
-import com.aylien.textapi.responses.Sentiment;
+import com.aylien.textapi.parameters.SummarizeParams;
+import com.aylien.textapi.responses.Summarize;
 
 public class MainActivity extends AppCompatActivity {
   @Override
@@ -15,20 +15,29 @@ public class MainActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
+    this.summaryGenerator("John is great");
+    this.summaryGenerator("John is great also awesome");
+  }
+
+  String summaryGenerator(String myInputString) {
     TextAPIClient client = new TextAPIClient("785ffb7d", "feb9d044e201df8c926602346d98de68");
-    SentimentParams.Builder builder = SentimentParams.newBuilder();
-    builder.setText("John is a very good football player");
-    Sentiment sentiment = null;
+
+    SummarizeParams.Builder builder = SummarizeParams.newBuilder();
+    builder.setText(myInputString);
+
+    builder.setNumberOfSentences(2);
+
+    Summarize sentiment = null;
+
     try {
-      sentiment = client.sentiment(builder.build());
+      sentiment = client.summarize(builder.build());
     } catch (TextAPIException e) {
       e.printStackTrace();
     }
 
     assert sentiment != null;
 
-    View parentLayout = findViewById(android.R.id.content);
-    System.out.println(sentiment);
+    return sentiment.getText();
   }
 
 }
