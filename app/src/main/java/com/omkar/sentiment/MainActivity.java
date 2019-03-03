@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try {
-                    final String text = summaryGenerator("John is great also awesome", "Test");
+                    final String text = summaryGenerator("John is great also awesome also he is working at google as data scientist. He also use firebase angular js typescript also system is greate", "Test");
                     Log.d("OMKAR", text);
                 } catch (Exception e) {
                     Log.e("OMKAR", e.getMessage());
