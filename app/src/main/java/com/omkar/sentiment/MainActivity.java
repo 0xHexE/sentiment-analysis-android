@@ -1,43 +1,75 @@
 package com.omkar.sentiment;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import android.os.Bundle;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
-import com.aylien.textapi.TextAPIClient;
-import com.aylien.textapi.TextAPIException;
-import com.aylien.textapi.parameters.SummarizeParams;
-import com.aylien.textapi.responses.Summarize;
+import android.os.Build;
+import android.os.Bundle;
+import android.util.Log;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
+    public static final MediaType JSON
+            = MediaType.get("application/json; charset=utf-8");
 
-    this.summaryGenerator("John is great", "test");
-    this.summaryGenerator("John is great also awesome", "Test");
-  }
+    OkHttpClient client = new OkHttpClient();
 
-  String summaryGenerator(String myInputString, String title) {
-    TextAPIClient client = new TextAPIClient("785ffb7d", "feb9d044e201df8c926602346d98de68");
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-    SummarizeParams.Builder builder = SummarizeParams.newBuilder();
-    builder.setText(myInputString);
-    builder.setTitle(title);
-
-    builder.setNumberOfSentences(2);
-
-    Summarize sentiment = null;
-
-    try {
-      sentiment = client.summarize(builder.build());
-    } catch (TextAPIException e) {
-      e.printStackTrace();
+        Thread thread = new Thread(new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+            @Override
+            public void run() {
+                try {
+                    final String text = summaryGenerator("John is great also awesome", "Test");
+                    Log.d("OMKAR", text);
+                } catch (Exception e) {
+                    Log.e("OMKAR", e.getMessage());
+                }
+            }
+        });
+        thread.start();
     }
 
-    assert sentiment != null;
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    String summaryGenerator(String myInputString, String title) throws JSONException {
 
-    return sentiment.getText();
-  }
+        final JSONObject jsonObject = new JSONObject();
+
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("title", title)
+                .addFormDataPart("text", myInputString)
+                .build();
+
+        Request request = new Request.Builder()
+                .url("https://api.aylien.com/api/v1/summarize")
+                .addHeader("X-AYLIEN-TextAPI-Application-Key", "feb9d044e201df8c926602346d98de68")
+                .addHeader("X-AYLIEN-TextAPI-Application-ID", "785ffb7d")
+                .post(requestBody)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+                assert response.body() != null;
+            return (new JSONObject(response.body().string())).getString("text");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Could not resolve";
+        }
+
+    }
 
 }
